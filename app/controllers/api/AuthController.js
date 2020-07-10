@@ -51,7 +51,7 @@ exports.register = async (req, res) => {
     // Save the verification data
     await verification.save();
 
-    // Send the response to server
+    // Send the response
     res.status(201).json(
       success(
         "Register success, please activate your account.",
@@ -71,6 +71,59 @@ exports.register = async (req, res) => {
     );
   } catch (err) {
     console.error(err.message);
+    res.status(500).json(error("Server error", res.statusCode));
+  }
+};
+
+/**
+ * @desc    Verify a new user
+ * @method  GET api/auth/verify/:token
+ * @access  private
+ */
+exports.verify = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    let verification = await Verification.findOne({
+      token,
+      type: "Register New Account",
+    });
+
+    // Check the verification data
+    if (!verification)
+      return res
+        .status(404)
+        .json(error("No verification data found", res.statusCode));
+
+    // If verification data exists
+    // Get the user data
+    // And activate the account
+    let user = await User.findOne({ _id: verification.userId }).select(
+      "-password"
+    );
+    user = await User.findByIdAndUpdate(user._id, {
+      $set: {
+        verified: true,
+        verifiedAt: new Date(),
+      },
+    });
+
+    // After user successfully verified
+    // Remove the verification data from database
+    verification = await Verification.findByIdAndRemove(verification._id);
+
+    // Send the response
+    res
+      .status(200)
+      .json(
+        success(
+          "Your successfully verificating your account",
+          null,
+          res.statusCode
+        )
+      );
+  } catch (err) {
+    console.log(err);
     res.status(500).json(error("Server error", res.statusCode));
   }
 };
