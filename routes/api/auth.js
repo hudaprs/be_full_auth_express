@@ -5,6 +5,7 @@ const {
   register,
   verify,
   login,
+  resendVerification,
 } = require("../../app/controllers/api/AuthController");
 
 // Middleware
@@ -17,5 +18,6 @@ const {
 router.post("/register", registerValidation, register);
 router.get("/verify/:token", verify);
 router.post("/login", loginValidation, login);
+router.post("/verify/resend", resendVerification);
 
 module.exports = router;
