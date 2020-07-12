@@ -247,3 +247,26 @@ exports.resendVerification = async (req, res) => {
     res.status(500).json(error("Server error", res.statusCode));
   }
 };
+
+/**
+ * @desc    Get authenticated user
+ * @method  GET api/auth
+ * @access  private
+ */
+exports.getAuthenticatedUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+
+    // Check the user just in case
+    if (!user)
+      return res.status(404).json(error("User not found", res.statusCode));
+
+    // Send the response
+    res
+      .status(200)
+      .json(success(`Hello ${user.name}`, { user }, res.statusCode));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json(error("Server error", res.statusCode));
+  }
+};
